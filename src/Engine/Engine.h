@@ -1,12 +1,16 @@
 #pragma once
+
+#include <memory>
+#include <map>
+
 #include <Windows.h>
 #include <GL/glew.h>
 #include <GL/GL.h>
 
 #include <GLFW/glfw3.h>
 
-
 #include "Framerate.h"
+#include "GameObject.h"
 
 namespace Biendeo::GameOff2016::Engine {
 	// The main class for managing the game environment.
@@ -19,14 +23,25 @@ namespace Biendeo::GameOff2016::Engine {
 		// Starts the execution of the engine. This stops when the GLFW window is closed.
 		void Run();
 
-		private:
-		Framerate* framerate;
+		// Removes a GameObject from the engine. Do not call this directly, call
+		// GameObject.Destroy(), which will run this instead.
+		// Returns whether an object was successfully destroyed or not.
+		bool RemoveGameObject(GameObject& gameObject);
+
+		// Returns a weak pointer referring to the given object. This should be use to conveniently
+		// get a reference to an object. If possible, use GameObject.GetWeakPointer() instead.
+		std::weak_ptr<GameObject> GetGameObjectWeakPointer(GameObject& gameObject);
+
+		protected:
+		std::unique_ptr<Framerate> framerate;
 
 		GLFWmonitor* monitor;
 		const GLFWvidmode* vidmode;
 		GLFWwindow* window;
 
 		bool verbose;
+
+		std::map<uint64_t, std::shared_ptr<GameObject>> gameObjects;
 
 		// Starts up GLFW.
 		bool InitialiseGLFW();
@@ -35,5 +50,12 @@ namespace Biendeo::GameOff2016::Engine {
 
 		// Draws the scene to the current active buffer.
 		void DrawBuffer();
+
+		// Instantiates a GameObject. The object needs to be a raw pointer, and is then managed by
+		// the engine.
+		bool Instantiate(GameObject* gameObject);
+
+		// Gets a unique new ID for a new GameObject. This will not conflict with any existing IDs.
+		uint64_t NewID();
 	};
 }

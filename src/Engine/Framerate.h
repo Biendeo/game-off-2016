@@ -19,7 +19,7 @@ namespace Biendeo::GameOff2016::Engine {
 
 		double Delta();
 
-		private:
+		protected:
 		short expectedFPS;
 		double delta;
 		double lastDraw;

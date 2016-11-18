@@ -1,8 +1,11 @@
 #include "Engine.h"
 
+#include <algorithm>
 #include <iostream>
 #include <string>
 #include <vector>
+
+#include "BaseObjects/Camera.h"
 
 namespace Biendeo::GameOff2016::Engine {
 	// The callback method when GLFW errors. This just outputs a message to stderr.
@@ -41,27 +44,50 @@ namespace Biendeo::GameOff2016::Engine {
 
 		// This establishes a framerate.
 		// TODO: Custom based on argument?
-		framerate = new Framerate(vidmode->refreshRate);
+		framerate = std::unique_ptr<Framerate>(new Framerate(vidmode->refreshRate));
 	}
 
 	Engine::~Engine() {
-		if (framerate != nullptr) {
-			delete framerate;
-		}
-
 		glfwDestroyWindow(window);
 
 		glfwTerminate();
 	}
 
 	void Engine::Run() {
-		GLfloat value = 0.0f;
+		// TODO: Test GameObject stuff here.
+		{
+			using namespace BaseObjects;
+
+			int count = 100000;
+
+			std::vector<Camera*> bigCameraList(count);
+			std::vector<std::weak_ptr<GameObject>> bigCameraList2(count);
+			for (int i = 0; i < count; ++i) {
+				bigCameraList.at(i) = new Camera(*this);
+
+				Instantiate(bigCameraList.at(i));
+
+				bigCameraList.at(i)->Name("Camera #" + std::to_string(i));
+
+				//delete bigCameraList.at(i);
+
+				bigCameraList2.at(i) = std::weak_ptr<GameObject>(gameObjects.at(bigCameraList.at(i)->ID()));
+
+				if (i != 0 && bigCameraList.at(i - 1)->GetChildDepth() != GameObject::MAXIMUM_CHILD_DEPTH) {
+					bigCameraList.at(i)->Parent(bigCameraList.at(i - 1)->GetWeakPointer());
+				}
+			}
+			
+			for (int i = 0; i < count; i += GameObject::MAXIMUM_CHILD_DEPTH + 1) {
+				bigCameraList.at(i)->Destroy();
+			}
+		}
 
 		while (!glfwWindowShouldClose(window)) {
 			DrawBuffer();
 			framerate->SleepToNextSwapBuffer();
 			glfwSwapBuffers(window);
-			//if (verbose) std::cout << "Frame " << framerate->FrameCount() << "\n";
+			if (verbose) std::cout << "Frame " << framerate->FrameCount() << "\n";
 			framerate->UpdateDrawTimes();
 			framerate->IncrementFrameCount();
 			glfwPollEvents();
@@ -137,5 +163,34 @@ namespace Biendeo::GameOff2016::Engine {
 		if (value > 1.0f) {
 			value -= 1.0f;
 		}
+	}
+
+	bool Engine::Instantiate(GameObject* gameObject) {
+		gameObject->ID(NewID());
+		gameObjects.insert(std::pair<uint64_t, std::shared_ptr<GameObject>>(gameObject->ID(), std::shared_ptr<GameObject>(gameObject)));
+		return true;
+	}
+
+	bool Engine::RemoveGameObject(GameObject& gameObject) {
+		// TODO: Improve performance, this takes a while for decent numbers of objects.
+		try {
+			std::shared_ptr<GameObject> ptr = gameObjects.at(gameObject.ID());
+			gameObjects.erase(ptr->ID());
+			return true;
+		} catch (std::out_of_range::exception& e) {
+			std::cerr << "The engine tried to delete ID: " << gameObject.ID() << " but it didn't exist!\n";
+			std::cerr << e.what() << "\n";
+		}
+
+		return false;
+	}
+
+	uint64_t Engine::NewID() {
+		static uint64_t id = 1;
+		return id++;
+	}
+
+	std::weak_ptr<GameObject> Engine::GetGameObjectWeakPointer(GameObject& gameObject) {
+		return std::weak_ptr<GameObject>(gameObjects.at(gameObject.ID()));
 	}
 }
