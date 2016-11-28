@@ -11,6 +11,7 @@
 
 #include "Framerate.h"
 #include "GameObject.h"
+#include "BaseObjects/Camera.h"
 
 namespace Biendeo::GameOff2016::Engine {
 	// The main class for managing the game environment.
@@ -42,6 +43,8 @@ namespace Biendeo::GameOff2016::Engine {
 		bool verbose;
 
 		std::map<uint64_t, std::shared_ptr<GameObject>> gameObjects;
+		
+		std::weak_ptr<BaseObjects::Camera> activeCamera;
 
 		// Starts up GLFW.
 		bool InitialiseGLFW();
@@ -52,8 +55,8 @@ namespace Biendeo::GameOff2016::Engine {
 		void DrawBuffer();
 
 		// Instantiates a GameObject. The object needs to be a raw pointer, and is then managed by
-		// the engine.
-		bool Instantiate(GameObject* gameObject);
+		// the engine. The return is a weak pointer to the object in the engine.
+		std::weak_ptr<GameObject> Instantiate(GameObject* gameObject);
 
 		// Gets a unique new ID for a new GameObject. This will not conflict with any existing IDs.
 		uint64_t NewID();

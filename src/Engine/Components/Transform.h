@@ -1,15 +1,18 @@
 #pragma once
 
-#include <Windows.h>
-#include <GL/GL.h>
+#include "glm/glm.hpp"
 
 #include "../Component.h"
 
 namespace Biendeo::GameOff2016::Engine::Components {
-	class ComCamera : public Component {
+	class Transform : public Component {
 		public:
-		ComCamera();
-		~ComCamera();
+		Transform();
+		~Transform();
+
+		glm::vec3& Translate();
+		glm::vec3& Rotate();
+		glm::vec3& Scale();
 
 		void Awake() override;
 		void LateUpdate() override;
@@ -20,7 +23,9 @@ namespace Biendeo::GameOff2016::Engine::Components {
 		void Update() override;
 
 		protected:
-		bool perspective;
-		float fov;
+		glm::vec3 translate;
+		// Convert this to a quaternion vec4 later.
+		glm::vec3 rotate;
+		glm::vec3 scale;
 	};
 }

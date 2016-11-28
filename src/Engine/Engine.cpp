@@ -58,28 +58,11 @@ namespace Biendeo::GameOff2016::Engine {
 		{
 			using namespace BaseObjects;
 
-			int count = 100000;
+			auto cameraPtr = std::shared_ptr<GameObject>(Instantiate(new Camera(*this)));
+			cameraPtr->Name("Test Camera");
 
-			std::vector<Camera*> bigCameraList(count);
-			std::vector<std::weak_ptr<GameObject>> bigCameraList2(count);
-			for (int i = 0; i < count; ++i) {
-				bigCameraList.at(i) = new Camera(*this);
-
-				Instantiate(bigCameraList.at(i));
-
-				bigCameraList.at(i)->Name("Camera #" + std::to_string(i));
-
-				//delete bigCameraList.at(i);
-
-				bigCameraList2.at(i) = std::weak_ptr<GameObject>(gameObjects.at(bigCameraList.at(i)->ID()));
-
-				if (i != 0 && bigCameraList.at(i - 1)->GetChildDepth() != GameObject::MAXIMUM_CHILD_DEPTH) {
-					bigCameraList.at(i)->Parent(bigCameraList.at(i - 1)->GetWeakPointer());
-				}
-			}
-			
-			for (int i = 0; i < count; i += GameObject::MAXIMUM_CHILD_DEPTH + 1) {
-				bigCameraList.at(i)->Destroy();
+			if (cameraPtr != nullptr) {
+				activeCamera = std::weak_ptr<BaseObjects::Camera>(std::static_pointer_cast<BaseObjects::Camera>(cameraPtr));
 			}
 		}
 
@@ -165,10 +148,10 @@ namespace Biendeo::GameOff2016::Engine {
 		}
 	}
 
-	bool Engine::Instantiate(GameObject* gameObject) {
+	std::weak_ptr<GameObject> Engine::Instantiate(GameObject* gameObject) {
 		gameObject->ID(NewID());
 		gameObjects.insert(std::pair<uint64_t, std::shared_ptr<GameObject>>(gameObject->ID(), std::shared_ptr<GameObject>(gameObject)));
-		return true;
+		return std::weak_ptr<GameObject>(gameObjects.at(gameObject->ID()));
 	}
 
 	bool Engine::RemoveGameObject(GameObject& gameObject) {

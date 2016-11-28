@@ -6,30 +6,16 @@ namespace Biendeo::GameOff2016::Engine {
 
 	GameObject::GameObject(Engine& engine) {
 		this->engine = &engine;
+		active = true;
+		initialized = false;
+
+		AddComponent(new Components::Transform());
+
+		transform = GetComponent<Components::Transform>();
 	}
 
 	GameObject::~GameObject() {
 
-	}
-
-	template<class T> std::weak_ptr<T> GameObject::GetComponent() {
-		for (Component& c : components) {
-			if (dynamic_cast<T*>(&c) != nullptr) {
-				return std::weak_ptr<T>(c);
-			}
-		}
-		return null;
-	}
-
-	template<class T> std::vector<std::weak_ptr<T>> GameObject::GetComponents() {
-		std::vector<std::weak_ptr<T>> foundComponents;
-		for (Component& c : components) {
-			if (dynamic_cast<T*>(&c) != nullptr) {
-				foundComponents.push_back(std::weak_ptr<T>(c));
-			}
-		}
-
-		return foundComponents;
 	}
 
 	bool GameObject::AddComponent(Component* c) {
@@ -48,6 +34,10 @@ namespace Biendeo::GameOff2016::Engine {
 			//Sleep(1);
 		}
 		engine->RemoveGameObject(*this);
+	}
+
+	Components::Transform& GameObject::Transform() {
+		return *std::shared_ptr<Components::Transform>(transform);
 	}
 
 	std::string GameObject::Name() {
@@ -116,5 +106,47 @@ namespace Biendeo::GameOff2016::Engine {
 		} else {
 			return 0;
 		}
+	}
+
+	bool GameObject::Active() {
+		return active;
+	}
+
+	bool GameObject::Active(bool activeState) {
+		this->active = activeState;
+		return active;
+	}
+
+	bool GameObject::ToggleActive() {
+		this->active = !active;
+		return active;
+	}
+
+	void GameObject::Awake() {
+		this->initialized = true;
+	}
+
+	void GameObject::LateUpdate() {
+
+	}
+
+	void GameObject::OnActive() {
+
+	}
+
+	void GameObject::OnDestroy() {
+
+	}
+
+	void GameObject::OnDisable() {
+
+	}
+
+	void GameObject::Start() {
+
+	}
+
+	void GameObject::Update() {
+
 	}
 }
