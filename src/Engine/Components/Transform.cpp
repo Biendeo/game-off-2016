@@ -1,7 +1,7 @@
 #include "Transform.h"
 
 namespace Biendeo::GameOff2016::Engine::Components {
-	Transform::Transform() {
+	Transform::Transform(GameObject* gameObject) : Component(gameObject) {
 		translate = glm::vec3{0.0f, 0.0f, 0.0f};
 		rotate = glm::vec3{0.0f, 0.0f, 0.0f};
 		scale = glm::vec3{1.0f, 1.0f, 1.0f};

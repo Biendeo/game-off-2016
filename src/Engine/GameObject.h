@@ -15,7 +15,7 @@ namespace Biendeo::GameOff2016::Engine {
 		public:
 		static const uint16_t MAXIMUM_CHILD_DEPTH = 1024;
 
-		GameObject(Engine& engine);
+		GameObject(Engine* engine);
 		~GameObject();
 
 		// Gets the first component that matches the given type, or null if there isn't one.
@@ -30,6 +30,7 @@ namespace Biendeo::GameOff2016::Engine {
 		void Destroy();
 
 		Components::Transform& Transform();
+		Components::Transform GlobalTransform();
 
 		std::string Name();
 		std::string Name(std::string newName);
@@ -47,6 +48,14 @@ namespace Biendeo::GameOff2016::Engine {
 		
 		// Returns the object's depth in the world hierarchy. It's 0 if it is at the root.
 		uint16_t GetChildDepth();
+
+		// Sets up the model view matrix to the object's position. This should be called only by
+		// the root object, as it is recursive and will call every sub-object.
+		void Draw();
+		// Renders the object. By default, this won't do anything, but for any sub-objects, you may
+		// want to override it.
+		// TODO: Make this part of a renderer component.
+		virtual void DrawSelf();
 
 		bool Active();
 		bool Active(bool activeState);
@@ -103,6 +112,6 @@ namespace Biendeo::GameOff2016::Engine {
 		}
 
 		return foundComponents;
-	}
+	};
 
 }

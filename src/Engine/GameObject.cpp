@@ -4,12 +4,12 @@
 
 namespace Biendeo::GameOff2016::Engine {
 
-	GameObject::GameObject(Engine& engine) {
-		this->engine = &engine;
+	GameObject::GameObject(Engine* engine) {
+		this->engine = engine;
 		active = true;
 		initialized = false;
 
-		AddComponent(new Components::Transform());
+		AddComponent(new Components::Transform(this));
 
 		transform = GetComponent<Components::Transform>();
 	}
@@ -38,6 +38,11 @@ namespace Biendeo::GameOff2016::Engine {
 
 	Components::Transform& GameObject::Transform() {
 		return *std::shared_ptr<Components::Transform>(transform);
+	}
+
+	Components::Transform GameObject::GlobalTransform() {
+		// TODO
+		return Components::Transform(this);
 	}
 
 	std::string GameObject::Name() {
@@ -108,6 +113,27 @@ namespace Biendeo::GameOff2016::Engine {
 		}
 	}
 
+	void GameObject::Draw() {
+		glPushMatrix();
+
+		glTranslatef(Transform().Translate().x, Transform().Translate().y, Transform().Translate().z);
+		glRotatef(Transform().Rotate().z, 0.0f, 0.0f, 1.0f);
+		glRotatef(Transform().Rotate().y, 0.0f, 1.0f, 0.0f);
+		glRotatef(Transform().Rotate().x, 1.0f, 0.0f, 0.0f);
+		glScalef(Transform().Scale().x, Transform().Scale().y, Transform().Scale().z);
+
+		DrawSelf();
+		for (auto& child : children) {
+			std::shared_ptr<GameObject>(child.second)->Draw();
+		}
+
+		glPopMatrix();
+	}
+
+	void GameObject::DrawSelf() {
+
+	}
+
 	bool GameObject::Active() {
 		return active;
 	}
@@ -123,30 +149,73 @@ namespace Biendeo::GameOff2016::Engine {
 	}
 
 	void GameObject::Awake() {
+		for (auto& c : components) {
+			std::shared_ptr<Component>(c)->Awake();
+		}
+
+		for (auto& child : children) {
+			std::shared_ptr<GameObject>(child.second)->Awake();
+		}
 		this->initialized = true;
 	}
 
 	void GameObject::LateUpdate() {
+		for (auto& c : components) {
+			std::shared_ptr<Component>(c)->LateUpdate();
+		}
 
+		for (auto& child : children) {
+			std::shared_ptr<GameObject>(child.second)->LateUpdate();
+		}
 	}
 
 	void GameObject::OnActive() {
+		for (auto& c : components) {
+			std::shared_ptr<Component>(c)->OnActive();
+		}
 
+		for (auto& child : children) {
+			std::shared_ptr<GameObject>(child.second)->OnActive();
+		}
 	}
 
 	void GameObject::OnDestroy() {
+		for (auto& c : components) {
+			std::shared_ptr<Component>(c)->OnDestroy();
+		}
 
+		for (auto& child : children) {
+			std::shared_ptr<GameObject>(child.second)->OnDestroy();
+		}
 	}
 
 	void GameObject::OnDisable() {
+		for (auto& c : components) {
+			std::shared_ptr<Component>(c)->OnDisable();
+		}
 
+		for (auto& child : children) {
+			std::shared_ptr<GameObject>(child.second)->OnDisable();
+		}
 	}
 
 	void GameObject::Start() {
+		for (auto& c : components) {
+			std::shared_ptr<Component>(c)->Start();
+		}
 
+		for (auto& child : children) {
+			std::shared_ptr<GameObject>(child.second)->Start();
+		}
 	}
 
 	void GameObject::Update() {
+		for (auto& c : components) {
+			std::shared_ptr<Component>(c)->Update();
+		}
 
+		for (auto& child : children) {
+			std::shared_ptr<GameObject>(child.second)->Update();
+		}
 	}
 }

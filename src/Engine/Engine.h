@@ -33,6 +33,10 @@ namespace Biendeo::GameOff2016::Engine {
 		// get a reference to an object. If possible, use GameObject.GetWeakPointer() instead.
 		std::weak_ptr<GameObject> GetGameObjectWeakPointer(GameObject& gameObject);
 
+		// Returns a weak pointer to the root object. All objects should be a child of this object
+		// in some way.
+		std::weak_ptr<GameObject> GetRootObjectPointer();
+
 		protected:
 		std::unique_ptr<Framerate> framerate;
 
@@ -44,6 +48,7 @@ namespace Biendeo::GameOff2016::Engine {
 
 		std::map<uint64_t, std::shared_ptr<GameObject>> gameObjects;
 		
+		std::weak_ptr<GameObject> rootObject;
 		std::weak_ptr<BaseObjects::Camera> activeCamera;
 
 		// Starts up GLFW.
@@ -60,5 +65,8 @@ namespace Biendeo::GameOff2016::Engine {
 
 		// Gets a unique new ID for a new GameObject. This will not conflict with any existing IDs.
 		uint64_t NewID();
+
+		// Generates a root object. The previous one should be destroyed beforehand.
+		void CreateRootObject();
 	};
 }

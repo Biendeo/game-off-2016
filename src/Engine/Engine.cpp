@@ -6,6 +6,7 @@
 #include <vector>
 
 #include "BaseObjects/Camera.h"
+#include "BaseObjects/Cube.h"
 
 namespace Biendeo::GameOff2016::Engine {
 	// The callback method when GLFW errors. This just outputs a message to stderr.
@@ -45,6 +46,9 @@ namespace Biendeo::GameOff2016::Engine {
 		// This establishes a framerate.
 		// TODO: Custom based on argument?
 		framerate = std::unique_ptr<Framerate>(new Framerate(vidmode->refreshRate));
+
+		// Creates a scene root just so we have a basis to start the engine.
+		CreateRootObject();
 	}
 
 	Engine::~Engine() {
@@ -58,15 +62,49 @@ namespace Biendeo::GameOff2016::Engine {
 		{
 			using namespace BaseObjects;
 
-			auto cameraPtr = std::shared_ptr<GameObject>(Instantiate(new Camera(*this)));
+			auto cameraPtr = std::shared_ptr<GameObject>(Instantiate(new Camera(this)));
 			cameraPtr->Name("Test Camera");
 
-			if (cameraPtr != nullptr) {
-				activeCamera = std::weak_ptr<BaseObjects::Camera>(std::static_pointer_cast<BaseObjects::Camera>(cameraPtr));
-			}
+			activeCamera = std::weak_ptr<BaseObjects::Camera>(std::static_pointer_cast<BaseObjects::Camera>(cameraPtr));
+
+			auto cubePtr = std::shared_ptr<GameObject>(Instantiate(new Cube(this)));
+			cubePtr->Name("Test Cube");
+
+			auto cubePtrTwo = std::shared_ptr<GameObject>(Instantiate(new Cube(this)));
+			cubePtrTwo->Name("Test Cube 2");
+			cubePtrTwo->Parent(cubePtr);
+
+			cubePtrTwo->Transform().Translate() = glm::vec3({1.5f, 1.5f, 1.5f});
+			cubePtrTwo->Transform().Rotate() = glm::vec3({45.0f, 45.0f, 45.0f});
+			cubePtrTwo->Transform().Scale() = glm::vec3({0.2f, 0.2f, 0.2f});
+
+			class Rotate : public Component {
+				public:
+				Rotate(GameObject* gameObject) : Component(gameObject) {}
+				~Rotate();
+
+				void Awake() override {}
+				void LateUpdate() override {}
+				void OnActive() override {}
+				void OnDestroy() override {}
+				void OnDisable() override {}
+				void Start() override {}
+				void Update() override {
+					gameObject->Transform().Rotate().x += 0.5f;
+					gameObject->Transform().Rotate().y += 0.3f;
+					gameObject->Transform().Rotate().z += 0.1f;
+				}
+			};
+
+			cubePtr->AddComponent(new Rotate(cubePtr.get()));
+			cubePtrTwo->AddComponent(new Rotate(cubePtrTwo.get()));
+			
+			cameraPtr->Transform().Translate().z += 4.0f;
 		}
 
 		while (!glfwWindowShouldClose(window)) {
+			std::shared_ptr<GameObject>(rootObject)->Update();
+			std::shared_ptr<GameObject>(rootObject)->LateUpdate();
 			DrawBuffer();
 			framerate->SleepToNextSwapBuffer();
 			glfwSwapBuffers(window);
@@ -133,24 +171,19 @@ namespace Biendeo::GameOff2016::Engine {
 	void Engine::DrawBuffer() {
 		// TODO: Turn this into something good.
 		glClear(GL_COLOR_BUFFER_BIT);
-		static GLfloat value = 0.0f;
-		glBegin(GL_TRIANGLE_STRIP);
-		glColor3f(value, 0.0f, 0.0f);
-		glVertex2f(0.0f, 0.5f);
-		glColor3f(0.0f, value, 0.0f);
-		glVertex2f(-0.3f, 0.0f);
-		glColor3f(0.0f, 0.0f, value);
-		glVertex2f(0.3f, 0.0f);
-		glEnd();
-		value += 0.01f;
-		if (value > 1.0f) {
-			value -= 1.0f;
-		}
+		glClear(GL_DEPTH_BUFFER_BIT);
+		std::shared_ptr<BaseObjects::Camera>(activeCamera)->SetupViewCamera();
+		std::shared_ptr<GameObject>(rootObject)->Draw();
 	}
 
 	std::weak_ptr<GameObject> Engine::Instantiate(GameObject* gameObject) {
 		gameObject->ID(NewID());
 		gameObjects.insert(std::pair<uint64_t, std::shared_ptr<GameObject>>(gameObject->ID(), std::shared_ptr<GameObject>(gameObject)));
+
+		// If the root object exists, this object will default to being the child of that.
+		if (!rootObject.expired()) {
+			gameObject->Parent(rootObject);
+		}
 		return std::weak_ptr<GameObject>(gameObjects.at(gameObject->ID()));
 	}
 
@@ -168,12 +201,22 @@ namespace Biendeo::GameOff2016::Engine {
 		return false;
 	}
 
+	std::weak_ptr<GameObject> Engine::GetGameObjectWeakPointer(GameObject& gameObject) {
+		return std::weak_ptr<GameObject>(gameObjects.at(gameObject.ID()));
+	}
+
+	std::weak_ptr<GameObject> Engine::GetRootObjectPointer() {
+		return rootObject;
+	}
+
 	uint64_t Engine::NewID() {
 		static uint64_t id = 1;
 		return id++;
 	}
 
-	std::weak_ptr<GameObject> Engine::GetGameObjectWeakPointer(GameObject& gameObject) {
-		return std::weak_ptr<GameObject>(gameObjects.at(gameObject.ID()));
+	void Engine::CreateRootObject() {
+		auto rootObjectPtr = std::shared_ptr<GameObject>(Instantiate(new GameObject(this)));
+		rootObjectPtr->Name("Root");
+		rootObject = std::weak_ptr<GameObject>(rootObjectPtr);
 	}
 }

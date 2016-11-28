@@ -1,8 +1,15 @@
 #pragma once
 
+#include <memory>
+
 namespace Biendeo::GameOff2016::Engine {
+	class GameObject;
+
 	class Component {
 		public:
+		Component(GameObject* gameObject);
+		~Component();
+
 		// Gets called before Start when the object is created.
 		virtual void Awake() = 0;
 		// Gets called after Update every framew.
@@ -17,5 +24,8 @@ namespace Biendeo::GameOff2016::Engine {
 		virtual void Start() = 0;
 		// Gets called every frame.
 		virtual void Update() = 0;
+
+		protected:
+		GameObject* gameObject;
 	};
 }

@@ -8,8 +8,13 @@
 namespace Biendeo::GameOff2016::Engine::Components {
 	class ComCamera : public Component {
 		public:
-		ComCamera();
+		ComCamera(GameObject* gameObject);
 		~ComCamera();
+
+		bool Perspective();
+		bool Perspective(bool perspective);
+		float FOV();
+		float FOV(float fov);
 
 		void Awake() override;
 		void LateUpdate() override;

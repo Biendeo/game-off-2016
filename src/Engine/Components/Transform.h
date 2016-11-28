@@ -7,7 +7,7 @@
 namespace Biendeo::GameOff2016::Engine::Components {
 	class Transform : public Component {
 		public:
-		Transform();
+		Transform(GameObject* gameObject);
 		~Transform();
 
 		glm::vec3& Translate();
