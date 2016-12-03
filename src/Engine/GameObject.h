@@ -19,9 +19,9 @@ namespace Biendeo::GameOff2016::Engine {
 		~GameObject();
 
 		// Gets the first component that matches the given type, or null if there isn't one.
-		template<class T> std::weak_ptr<T> GameObject::GetComponent();
+		template<class T> std::shared_ptr<T> GetComponent();
 		// Gets a vector of all the components that match the given type.
-		template<class T> std::vector<std::weak_ptr<T>> GetComponents();
+		template<class T> std::vector<std::shared_ptr<T>> GetComponents();
 		// Adds this component to the GameObject. This needs to be a raw pointer, it will be
 		// managed by this object afterwards.
 		bool AddComponent(Component* c);
@@ -39,12 +39,12 @@ namespace Biendeo::GameOff2016::Engine {
 		// Do not call this method manually, or the engine will not be able to find the object.
 		uint64_t ID(uint64_t newId);
 
-		std::weak_ptr<GameObject> Parent();
-		std::weak_ptr<GameObject> Parent(std::weak_ptr<GameObject> newParent);
+		std::shared_ptr<GameObject> Parent();
+		std::shared_ptr<GameObject> Parent(std::shared_ptr<GameObject> newParent);
 
-		std::map<uint64_t, std::weak_ptr<GameObject>> Children();
+		std::map<uint64_t, std::shared_ptr<GameObject>> Children();
 
-		std::weak_ptr<GameObject> GetWeakPointer();
+		std::shared_ptr<GameObject> GetPointer();
 		
 		// Returns the object's depth in the world hierarchy. It's 0 if it is at the root.
 		uint16_t GetChildDepth();
@@ -63,7 +63,7 @@ namespace Biendeo::GameOff2016::Engine {
 
 		// Gets called before Start when the object is created.
 		void Awake();
-		// Gets called after Update every framew.
+		// Gets called after Update every frame.
 		void LateUpdate();
 		// Gets called when the object is made active.
 		void OnActive();
@@ -94,20 +94,20 @@ namespace Biendeo::GameOff2016::Engine {
 		bool initialized;
 	};
 
-	template<class T> inline std::weak_ptr<T> GameObject::GetComponent() {
+	template<class T> inline std::shared_ptr<T> GameObject::GetComponent() {
 		for (std::shared_ptr<Component>& c : components) {
 			if (std::dynamic_pointer_cast<T>(c) != nullptr) {
-				return std::weak_ptr<T>(std::dynamic_pointer_cast<T>(c));
+				return std::dynamic_pointer_cast<T>(c);
 			}
 		}
-		return std::weak_ptr<T>(std::shared_ptr<T>(nullptr));
+		return std::shared_ptr<T>(nullptr);
 	};
 
-	template<class T> inline std::vector<std::weak_ptr<T>> GameObject::GetComponents() {
+	template<class T> inline std::vector<std::shared_ptr<T>> GameObject::GetComponents() {
 		std::vector<std::weak_ptr<T>> foundComponents;
 		for (std::shared_ptr<Component>& c : components) {
 			if (std::dynamic_pointer_cast<T>(c) != nullptr) {
-				foundComponents.push_back(std::weak_ptr<T>(std::dynamic_pointer_cast<T>(c)));
+				foundComponents.push_back(std::dynamic_pointer_cast<T>(c));
 			}
 		}
 

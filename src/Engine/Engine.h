@@ -29,13 +29,13 @@ namespace Biendeo::GameOff2016::Engine {
 		// Returns whether an object was successfully destroyed or not.
 		bool RemoveGameObject(GameObject& gameObject);
 
-		// Returns a weak pointer referring to the given object. This should be use to conveniently
-		// get a reference to an object. If possible, use GameObject.GetWeakPointer() instead.
-		std::weak_ptr<GameObject> GetGameObjectWeakPointer(GameObject& gameObject);
+		// Returns a pointer referring to the given object. This should be used to conveniently
+		// get a reference to an object. If possible, use GameObject.GetPointer() instead.
+		std::shared_ptr<GameObject> GetGameObjectPointer(GameObject& gameObject);
 
-		// Returns a weak pointer to the root object. All objects should be a child of this object
+		// Returns a pointer to the root object. All objects should be a child of this object
 		// in some way.
-		std::weak_ptr<GameObject> GetRootObjectPointer();
+		std::shared_ptr<GameObject> GetRootObjectPointer();
 
 		protected:
 		std::unique_ptr<Framerate> framerate;
@@ -49,7 +49,7 @@ namespace Biendeo::GameOff2016::Engine {
 		std::map<uint64_t, std::shared_ptr<GameObject>> gameObjects;
 		
 		std::weak_ptr<GameObject> rootObject;
-		std::weak_ptr<BaseObjects::Camera> activeCamera;
+		std::weak_ptr<Components::ComCamera> activeCamera;
 
 		// Starts up GLFW.
 		bool InitialiseGLFW();
@@ -61,7 +61,7 @@ namespace Biendeo::GameOff2016::Engine {
 
 		// Instantiates a GameObject. The object needs to be a raw pointer, and is then managed by
 		// the engine. The return is a weak pointer to the object in the engine.
-		std::weak_ptr<GameObject> Instantiate(GameObject* gameObject);
+		std::shared_ptr<GameObject> Instantiate(GameObject* gameObject);
 
 		// Gets a unique new ID for a new GameObject. This will not conflict with any existing IDs.
 		uint64_t NewID();

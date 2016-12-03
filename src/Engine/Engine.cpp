@@ -62,15 +62,15 @@ namespace Biendeo::GameOff2016::Engine {
 		{
 			using namespace BaseObjects;
 
-			auto cameraPtr = std::shared_ptr<GameObject>(Instantiate(new Camera(this)));
+			auto cameraPtr = Instantiate(new Camera(this));
 			cameraPtr->Name("Test Camera");
 
-			activeCamera = std::weak_ptr<BaseObjects::Camera>(std::static_pointer_cast<BaseObjects::Camera>(cameraPtr));
+			activeCamera = std::weak_ptr<Components::ComCamera>(std::static_pointer_cast<Camera>(cameraPtr)->CameraComponent());
 
-			auto cubePtr = std::shared_ptr<GameObject>(Instantiate(new Cube(this)));
+			auto cubePtr = Instantiate(new Cube(this));
 			cubePtr->Name("Test Cube");
 
-			auto cubePtrTwo = std::shared_ptr<GameObject>(Instantiate(new Cube(this)));
+			auto cubePtrTwo = Instantiate(new Cube(this));
 			cubePtrTwo->Name("Test Cube 2");
 			cubePtrTwo->Parent(cubePtr);
 
@@ -81,7 +81,7 @@ namespace Biendeo::GameOff2016::Engine {
 			class Rotate : public Component {
 				public:
 				Rotate(GameObject* gameObject) : Component(gameObject) {}
-				~Rotate();
+				~Rotate() {}
 
 				void Awake() override {}
 				void LateUpdate() override {}
@@ -172,19 +172,19 @@ namespace Biendeo::GameOff2016::Engine {
 		// TODO: Turn this into something good.
 		glClear(GL_COLOR_BUFFER_BIT);
 		glClear(GL_DEPTH_BUFFER_BIT);
-		std::shared_ptr<BaseObjects::Camera>(activeCamera)->SetupViewCamera();
+		std::shared_ptr<Components::ComCamera>(activeCamera)->SetupViewCamera();
 		std::shared_ptr<GameObject>(rootObject)->Draw();
 	}
 
-	std::weak_ptr<GameObject> Engine::Instantiate(GameObject* gameObject) {
+	std::shared_ptr<GameObject> Engine::Instantiate(GameObject* gameObject) {
 		gameObject->ID(NewID());
 		gameObjects.insert(std::pair<uint64_t, std::shared_ptr<GameObject>>(gameObject->ID(), std::shared_ptr<GameObject>(gameObject)));
 
 		// If the root object exists, this object will default to being the child of that.
 		if (!rootObject.expired()) {
-			gameObject->Parent(rootObject);
+			gameObject->Parent(std::shared_ptr<GameObject>(rootObject));
 		}
-		return std::weak_ptr<GameObject>(gameObjects.at(gameObject->ID()));
+		return gameObjects.at(gameObject->ID());
 	}
 
 	bool Engine::RemoveGameObject(GameObject& gameObject) {
@@ -201,12 +201,12 @@ namespace Biendeo::GameOff2016::Engine {
 		return false;
 	}
 
-	std::weak_ptr<GameObject> Engine::GetGameObjectWeakPointer(GameObject& gameObject) {
-		return std::weak_ptr<GameObject>(gameObjects.at(gameObject.ID()));
+	std::shared_ptr<GameObject> Engine::GetGameObjectPointer(GameObject& gameObject) {
+		return gameObjects.at(gameObject.ID());
 	}
 
-	std::weak_ptr<GameObject> Engine::GetRootObjectPointer() {
-		return rootObject;
+	std::shared_ptr<GameObject> Engine::GetRootObjectPointer() {
+		return std::shared_ptr<GameObject>(rootObject);
 	}
 
 	uint64_t Engine::NewID() {

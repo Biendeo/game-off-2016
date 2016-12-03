@@ -63,16 +63,14 @@ namespace Biendeo::GameOff2016::Engine {
 		return id;
 	}
 
-	std::weak_ptr<GameObject> GameObject::Parent() {
-		return parent;
+	std::shared_ptr<GameObject> GameObject::Parent() {
+		return std::shared_ptr<GameObject>(parent);
 	}
 
-	std::weak_ptr<GameObject> GameObject::Parent(std::weak_ptr<GameObject> newParent) {
+	std::shared_ptr<GameObject> GameObject::Parent(std::shared_ptr<GameObject> newParent) {
 		// TODO: Additional things for unsetting the previous parent such as repositioning, etc.
-		std::shared_ptr<GameObject> newParentPtr = std::shared_ptr<GameObject>(newParent);
-
-		if (newParentPtr->GetChildDepth() >= MAXIMUM_CHILD_DEPTH) {
-			std::string message = newParentPtr->Name() + " is at the maximum child depth of " + std::to_string(MAXIMUM_CHILD_DEPTH) + ", cannot set parent.";
+		if (newParent->GetChildDepth() >= MAXIMUM_CHILD_DEPTH) {
+			std::string message = newParent->Name() + " is at the maximum child depth of " + std::to_string(MAXIMUM_CHILD_DEPTH) + ", cannot set parent.";
 			throw std::exception(message.data());
 		}
 
@@ -85,19 +83,25 @@ namespace Biendeo::GameOff2016::Engine {
 
 		this->parent = newParent;
 
-		if (newParentPtr != nullptr) {
-			newParentPtr->children.insert(std::pair<uint64_t, std::weak_ptr<GameObject>>(ID(), GetWeakPointer()));
+		if (newParent != nullptr) {
+			newParent->children.insert(std::pair<uint64_t, std::weak_ptr<GameObject>>(ID(), std::weak_ptr<GameObject>(GetPointer())));
 		}
 
-		return parent;
+		return newParent;
 	}
 
-	std::map<uint64_t, std::weak_ptr<GameObject>> GameObject::Children() {
-		return children;
+	std::map<uint64_t, std::shared_ptr<GameObject>> GameObject::Children() {
+		typedef std::map<uint64_t, std::weak_ptr<GameObject>>::iterator iterator;
+		std::map<uint64_t, std::shared_ptr<GameObject>> childrenMap;
+		for (iterator it = children.begin(); it != children.end(); it++) {
+			auto childPtr = std::shared_ptr<GameObject>(it->second);
+			childrenMap.insert(std::make_pair(childPtr->ID(), childPtr));
+		}
+		return childrenMap;
 	}
 
-	std::weak_ptr<GameObject> GameObject::GetWeakPointer() {
-		return std::weak_ptr<GameObject>(engine->GetGameObjectWeakPointer(*this));
+	std::shared_ptr<GameObject> GameObject::GetPointer() {
+		return engine->GetGameObjectPointer(*this);
 	}
 
 	uint16_t GameObject::GetChildDepth() {

@@ -10,8 +10,7 @@ namespace Biendeo::GameOff2016::Engine::BaseObjects {
 		public:
 		Camera(Engine* engine);
 		~Camera();
-
-		void SetupViewCamera();
+		std::shared_ptr<Biendeo::GameOff2016::Engine::Components::ComCamera> CameraComponent();
 
 		protected:
 		std::weak_ptr<Biendeo::GameOff2016::Engine::Components::ComCamera> camera;
