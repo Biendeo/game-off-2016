@@ -16,7 +16,7 @@ namespace Biendeo::GameOff2016::Engine::Components {
 		float FOV();
 		float FOV(float fov);
 
-		void SetupViewCamera();
+		void SetupViewCamera(int screenX, int screenY, int width, int height);
 
 		void Awake() override;
 		void LateUpdate() override;

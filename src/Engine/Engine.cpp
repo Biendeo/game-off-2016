@@ -14,6 +14,19 @@ namespace Biendeo::GameOff2016::Engine {
 		std::cerr << "GLFW Error: " << description << "\n";
 	}
 
+	void GLFWWindowSizeCallback(GLFWwindow* window, int width, int height) {
+		//std::cout << "Resized window to: " << width << "x" << height << "\n";
+	}
+
+	void GLFWWindowPosCallback(GLFWwindow* window, int screenX, int screenY) {
+		//std::cout << "Moved window to: " << screenX << "x" << screenY << "\n";
+
+	}
+
+	void GLFWFramebufferSizeCallback(GLFWwindow* window, int width, int height) {
+		//std::cout << "Resized frame buffer to: " << width << "x" << height << "\n";
+	}
+
 	Engine::Engine(int argc, char* argv[]) {
 		// Start off by turning the arguments into a vector.
 		std::vector<std::string> arguments(argc);
@@ -108,7 +121,7 @@ namespace Biendeo::GameOff2016::Engine {
 			DrawBuffer();
 			framerate->SleepToNextSwapBuffer();
 			glfwSwapBuffers(window);
-			if (verbose) std::cout << "Frame " << framerate->FrameCount() << "\n";
+			//if (verbose) std::cout << "Frame " << framerate->FrameCount() << "\n";
 			framerate->UpdateDrawTimes();
 			framerate->IncrementFrameCount();
 			glfwPollEvents();
@@ -161,6 +174,13 @@ namespace Biendeo::GameOff2016::Engine {
 
 		glfwMakeContextCurrent(window);
 
+		// This associates the window resize function.
+		glfwSetWindowSizeCallback(window, GLFWWindowSizeCallback);
+		// This associates the window positioning function.
+		glfwSetWindowPosCallback(window, GLFWWindowPosCallback);
+		// This the framebuffer resize function.
+		glfwSetFramebufferSizeCallback(window, GLFWFramebufferSizeCallback);
+
 		if (verbose) {
 			std::cout << "OpenGL Version: " << reinterpret_cast<const char*>(glGetString(GL_VERSION)) << "\n";
 		}
@@ -170,9 +190,13 @@ namespace Biendeo::GameOff2016::Engine {
 
 	void Engine::DrawBuffer() {
 		// TODO: Turn this into something good.
+		glClearColor(0.5f, 0.2f, 0.2f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT);
 		glClear(GL_DEPTH_BUFFER_BIT);
-		std::shared_ptr<Components::ComCamera>(activeCamera)->SetupViewCamera();
+		int screenX, screenY, width, height;
+		glfwGetWindowPos(window, &screenX, &screenY);
+		glfwGetWindowSize(window, &width, &height);
+		std::shared_ptr<Components::ComCamera>(activeCamera)->SetupViewCamera(screenX, screenY, width, height);
 		std::shared_ptr<GameObject>(rootObject)->Draw();
 	}
 
@@ -188,7 +212,6 @@ namespace Biendeo::GameOff2016::Engine {
 	}
 
 	bool Engine::RemoveGameObject(GameObject& gameObject) {
-		// TODO: Improve performance, this takes a while for decent numbers of objects.
 		try {
 			std::shared_ptr<GameObject> ptr = gameObjects.at(gameObject.ID());
 			gameObjects.erase(ptr->ID());

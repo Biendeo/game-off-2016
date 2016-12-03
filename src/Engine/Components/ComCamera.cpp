@@ -1,5 +1,7 @@
 #include "ComCamera.h"
 
+#include <iostream>
+
 #include "../GameObject.h"
 
 namespace Biendeo::GameOff2016::Engine::Components {
@@ -30,12 +32,25 @@ namespace Biendeo::GameOff2016::Engine::Components {
 		return fov;
 	}
 
-	void ComCamera::SetupViewCamera() {
+	void ComCamera::SetupViewCamera(int screenX, int screenY, int width, int height) {
 		glMatrixMode(GL_PROJECTION);
 		glLoadIdentity();
 
-		// TODO: Use the screen ratio and not arbitrary numbers I chose.
-		glFrustum(-0.1, 0.1, -0.075, 0.075, 0.1 / tan(FOV() / 2.0f * atanf(1.0) * 4.0f / 180.0f), 1000.0f);
+		float aspectRatio = width * 1.0f / height;
+		float roughNearPlane = tan(FOV() / 2.0f * atanf(1.0) * 4.0f / 180.0f);
+		const float nearPlaneFactor = 0.1f;
+		const float farPlane = 1000.0f;
+
+		if (aspectRatio >= 1.0) {
+			glFrustum(-aspectRatio * nearPlaneFactor, aspectRatio * nearPlaneFactor, -nearPlaneFactor, nearPlaneFactor, nearPlaneFactor / roughNearPlane, farPlane);
+			//std::cout << -aspectRatio * nearPlaneFactor << ", " << aspectRatio * nearPlaneFactor << ", " << -nearPlaneFactor << ", " << nearPlaneFactor << ", " << nearPlaneFactor / roughNearPlane << ", " << farPlane << "\n";
+			
+		} else {
+			glFrustum(-nearPlaneFactor, nearPlaneFactor, -nearPlaneFactor / aspectRatio, nearPlaneFactor / aspectRatio, nearPlaneFactor / roughNearPlane, farPlane);
+			//std::cout << -nearPlaneFactor << ", " << nearPlaneFactor << ", " << -nearPlaneFactor / aspectRatio << ", " << nearPlaneFactor / aspectRatio << ", " << nearPlaneFactor / roughNearPlane << ", " << farPlane << "\n";
+		}
+
+		glViewport(0, 0, width, height);
 
 		glMatrixMode(GL_MODELVIEW);
 		glLoadIdentity();
