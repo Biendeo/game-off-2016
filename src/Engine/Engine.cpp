@@ -7,6 +7,7 @@
 
 #include "BaseObjects/Camera.h"
 #include "BaseObjects/Cube.h"
+#include "Components/FirstPersonFlyControls.h"
 
 namespace Biendeo::GameOff2016::Engine {
 	// The callback method when GLFW errors. This just outputs a message to stderr.
@@ -97,15 +98,15 @@ namespace Biendeo::GameOff2016::Engine {
 				~Rotate() {}
 
 				void Awake() override {}
-				void LateUpdate() override {}
+				void LateUpdate(float deltaTime) override {}
 				void OnActive() override {}
 				void OnDestroy() override {}
 				void OnDisable() override {}
 				void Start() override {}
-				void Update() override {
-					gameObject->Transform().Rotate().x += 0.5f;
-					gameObject->Transform().Rotate().y += 0.3f;
-					gameObject->Transform().Rotate().z += 0.1f;
+				void Update(float deltaTime) override {
+					gameObject->Transform().Rotate().x += 60.0f * deltaTime;
+					gameObject->Transform().Rotate().y += 30.0f * deltaTime;
+					gameObject->Transform().Rotate().z += 15.0f * deltaTime;
 				}
 			};
 
@@ -113,17 +114,19 @@ namespace Biendeo::GameOff2016::Engine {
 			cubePtrTwo->AddComponent(new Rotate(cubePtrTwo.get()));
 			
 			cameraPtr->Transform().Translate().z += 4.0f;
+			cameraPtr->AddComponent(new Components::FirstPersonFlyControls(cameraPtr.get()));
 		}
 
 		while (!glfwWindowShouldClose(window)) {
-			std::shared_ptr<GameObject>(rootObject)->Update();
-			std::shared_ptr<GameObject>(rootObject)->LateUpdate();
+			std::shared_ptr<GameObject>(rootObject)->Update((float)framerate->Delta());
+			std::shared_ptr<GameObject>(rootObject)->LateUpdate((float)framerate->Delta());
 			DrawBuffer();
 			framerate->SleepToNextSwapBuffer();
 			glfwSwapBuffers(window);
 			//if (verbose) std::cout << "Frame " << framerate->FrameCount() << "\n";
 			framerate->UpdateDrawTimes();
 			framerate->IncrementFrameCount();
+			Input::ConfirmFrameInput();
 			glfwPollEvents();
 		}
 	}
@@ -180,6 +183,13 @@ namespace Biendeo::GameOff2016::Engine {
 		glfwSetWindowPosCallback(window, GLFWWindowPosCallback);
 		// This the framebuffer resize function.
 		glfwSetFramebufferSizeCallback(window, GLFWFramebufferSizeCallback);
+		// These set input functions.
+		glfwSetKeyCallback(window, Input::GLFWKeyCallback);
+		glfwSetCursorPosCallback(window, Input::GLFWCursorPosCallback);
+		glfwSetMouseButtonCallback(window, Input::GLFWMouseButtonCallback);
+
+		// We flush the inputs so the program doesn't think anything has happened yet.
+		Input::FlushInput();
 
 		if (verbose) {
 			std::cout << "OpenGL Version: " << reinterpret_cast<const char*>(glGetString(GL_VERSION)) << "\n";

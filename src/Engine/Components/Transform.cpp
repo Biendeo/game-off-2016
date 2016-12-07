@@ -27,7 +27,7 @@ namespace Biendeo::GameOff2016::Engine::Components {
 
 	}
 
-	void Transform::LateUpdate() {
+	void Transform::LateUpdate(float deltaTime) {
 
 	}
 
@@ -47,7 +47,7 @@ namespace Biendeo::GameOff2016::Engine::Components {
 
 	}
 
-	void Transform::Update() {
+	void Transform::Update(float deltaTime) {
 
 	}
 }

@@ -11,6 +11,7 @@
 
 #include "Framerate.h"
 #include "GameObject.h"
+#include "Input.h"
 #include "BaseObjects/Camera.h"
 
 namespace Biendeo::GameOff2016::Engine {

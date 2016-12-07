@@ -3,6 +3,7 @@
 #include <iostream>
 
 #include "../GameObject.h"
+#include "../CommonMath.h"
 
 namespace Biendeo::GameOff2016::Engine::Components {
 	ComCamera::ComCamera(GameObject* gameObject) : Component(gameObject) {
@@ -37,7 +38,7 @@ namespace Biendeo::GameOff2016::Engine::Components {
 		glLoadIdentity();
 
 		float aspectRatio = width * 1.0f / height;
-		float roughNearPlane = tan(FOV() / 2.0f * atanf(1.0) * 4.0f / 180.0f);
+		float roughNearPlane = tan(FOV() / 2.0f * PI() / 180.0f);
 		const float nearPlaneFactor = 0.1f;
 		const float farPlane = 1000.0f;
 
@@ -66,7 +67,7 @@ namespace Biendeo::GameOff2016::Engine::Components {
 
 	}
 
-	void ComCamera::LateUpdate() {
+	void ComCamera::LateUpdate(float deltaTime) {
 
 	}
 
@@ -86,7 +87,7 @@ namespace Biendeo::GameOff2016::Engine::Components {
 
 	}
 
-	void ComCamera::Update() {
+	void ComCamera::Update(float deltaTime) {
 		
 	}
 }

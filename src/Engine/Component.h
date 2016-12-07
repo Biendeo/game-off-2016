@@ -13,7 +13,7 @@ namespace Biendeo::GameOff2016::Engine {
 		// Gets called before Start when the object is created.
 		virtual void Awake() = 0;
 		// Gets called after Update every frame.
-		virtual void LateUpdate() = 0;
+		virtual void LateUpdate(float deltaTime) = 0;
 		// Gets called when the object is made active.
 		virtual void OnActive() = 0;
 		// Gets called when the object is destroyed.
@@ -23,7 +23,7 @@ namespace Biendeo::GameOff2016::Engine {
 		// Gets called when the object is created.
 		virtual void Start() = 0;
 		// Gets called every frame.
-		virtual void Update() = 0;
+		virtual void Update(float deltaTime) = 0;
 
 		protected:
 		GameObject* gameObject;

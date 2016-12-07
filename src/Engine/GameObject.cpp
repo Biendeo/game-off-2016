@@ -163,13 +163,13 @@ namespace Biendeo::GameOff2016::Engine {
 		this->initialized = true;
 	}
 
-	void GameObject::LateUpdate() {
+	void GameObject::LateUpdate(float deltaTime) {
 		for (auto& c : components) {
-			std::shared_ptr<Component>(c)->LateUpdate();
+			std::shared_ptr<Component>(c)->LateUpdate(deltaTime);
 		}
 
 		for (auto& child : children) {
-			std::shared_ptr<GameObject>(child.second)->LateUpdate();
+			std::shared_ptr<GameObject>(child.second)->LateUpdate(deltaTime);
 		}
 	}
 
@@ -213,13 +213,13 @@ namespace Biendeo::GameOff2016::Engine {
 		}
 	}
 
-	void GameObject::Update() {
+	void GameObject::Update(float deltaTime) {
 		for (auto& c : components) {
-			std::shared_ptr<Component>(c)->Update();
+			std::shared_ptr<Component>(c)->Update(deltaTime);
 		}
 
 		for (auto& child : children) {
-			std::shared_ptr<GameObject>(child.second)->Update();
+			std::shared_ptr<GameObject>(child.second)->Update(deltaTime);
 		}
 	}
 }
